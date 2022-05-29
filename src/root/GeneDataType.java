@@ -1,0 +1,5 @@
+package root;
+
+public enum GeneDataType {
+    X_DISTANCE_PIPE, Y_DISTANCE_UP_PIPE, Y_DISTANCE_FLOOR, VY, JUMP, Y_DISTANCE_BOTTOM_PIPE, NO_PIPE
+}

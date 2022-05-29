@@ -8,16 +8,16 @@ import java.io.IOException;
 
 public class Bird {
 
-    int y;
-    int vy;
-    final int x = 100;
-    final int gravity = 2;
-    final int jumpHeight = 20;
-    final int maxSpeed = 20;
+    private int y;
+    private int vy;
+    private int x = 100;
+    private final int gravity = 2;
+    private final int jumpHeight = 20;
+    private final int maxSpeed = 20;
 
-    final int birdWidth = (int)(34*1.75);
-    final int birdHeight = (int)(24*1.75);
-    BufferedImage birdImage;
+    private final int birdWidth = (int)(34*1.75);
+    private final int birdHeight = (int)(24*1.75);
+    private BufferedImage birdImage;
 
     public Bird(int windowHeight){
 
@@ -33,13 +33,19 @@ public class Bird {
         }
     }
 
-    public void tick(){
-        this.y += this.vy;
-        this.vy = Math.min(this.vy + this.gravity, this.maxSpeed);
+    public void tick(boolean isAlive, int vx){
+        if(isAlive) {
+            this.y += this.vy;
+            this.vy = Math.min(this.vy + this.gravity, this.maxSpeed);
+        } else {
+            this.x -= vx;
+        }
     }
 
     public void jump(){
-        this.vy = -jumpHeight;
+        if(this.y > 0) {
+            this.vy = -jumpHeight;
+        }
     }
 
     public void repaint(Graphics g){
@@ -61,4 +67,14 @@ public class Bird {
     public int getX() {
         return x;
     }
+
+    public int getVy() {
+        return vy;
+    }
+
+    public int getMaxSpeed(){
+        return maxSpeed;
+    }
+
+
 }

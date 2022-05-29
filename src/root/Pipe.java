@@ -7,7 +7,7 @@ public class Pipe {
     private int x;
     private int vx;
     private int y;
-    private final int gap = 170;
+    private final int gap = 170; //old 170
     private BufferedImage pipeTopImage;
     private BufferedImage pipeLayerImage;
     private final int pipeLayerWidth = 85;

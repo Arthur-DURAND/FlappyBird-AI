@@ -11,9 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 public class Game extends JPanel implements ActionListener, KeyListener {
@@ -24,6 +21,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     // Floor animation
     private final int vx = 10;
     private int x = 0;
+    private int globalX = 0;
     private final int loopX = 36;
 
     // Images
@@ -33,7 +31,8 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     BufferedImage pipeLayerImage;
 
     // To know when to summon pipe
-    private int pipeTimer = 0;
+    private int pipeTimer;
+    private final int pipeTimerSpawn = 40;
 
     // If still playing or not
     private GameState state;
@@ -41,14 +40,23 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     private Timer timer;
 
     private int windowHeight;
+    private int floorY;
 
-    public Game(int windowHeight){
+    private boolean humanPlaying;
+    private AIConductor aiConductor;
+
+    public Game(int windowHeight, boolean humanPlaying, AIConductor aiConductor){
 
         // Game elements
         pipes = new LinkedList<Pipe>();
         this.windowHeight = windowHeight;
+        this.floorY = (int)(this.windowHeight * 0.843);
         bird = new Bird(windowHeight);
         this.score = 0;
+
+        // AI or not
+        this.humanPlaying = humanPlaying;
+        this.aiConductor = aiConductor;
 
         // Load images
         try {
@@ -82,19 +90,22 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         // Timer
         this.timer = new Timer(1000/60, this);
         this.timer.start();
-
     }
 
     // update stuff on timer
     public void tick() {
-        bird.tick();
+        if(this.humanPlaying) {
+            bird.tick(true, 0);
+        } else {
+            this.aiConductor.tick(this);
+        }
 
         // Update x
         this.updateX();
 
         // Summon pipes
         this.pipeTimer++;
-        if (this.pipeTimer > 40){
+        if (this.pipeTimer > pipeTimerSpawn){
             this.pipeTimer = 0;
             this.pipes.add(new Pipe(this.getWidth(), this.getHeight(), this.vx, this.pipeTopImage, this.pipeLayerImage));
         }
@@ -108,10 +119,27 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         }
 
         // Check for collisions
-        boolean collided = this.collision();
-        if(collided){
-            this.state = GameState.ENDSCREEN;
-            this.repaint();
+        if(this.humanPlaying) {
+            boolean collided = this.collision(this.bird);
+            if (collided) {
+                this.state = GameState.ENDSCREEN;
+                this.repaint();
+            }
+        } else {
+            // Check if an ai is still playing
+            boolean aiAlive = false;
+            for(AI ai : this.aiConductor.getAis()){
+                if(ai.isAlive()) {
+                    aiAlive = true;
+                    boolean collided = this.collision(ai.getBird());
+                    if (collided) {
+                        ai.feedReward(this.globalX);
+                    }
+                }
+            }
+            if(!aiAlive){
+                this.generationLost();
+            }
         }
 
         // Update score
@@ -125,28 +153,35 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         }
     }
 
+    public void generationLost(){
+        this.aiConductor.newGeneration();
+        startGame();
+    }
+
     public void updateX(){
         this.x += this.vx;
         if (this.x > loopX){
             this.x -= loopX;
         }
+        // For ai reward
+        this.globalX += this.vx;
     }
 
-    public boolean collision(){
+    public boolean collision(Bird birdToCheck){
         // Pipes
         // TODO bird not square (more like a circle)
         for(Pipe pipe : this.pipes){
-            if (pipe.getX() < this.bird.getX() + this.bird.getBirdWidth() &&
-                    pipe.getX() + pipe.getPipeTopWidth() > this.bird.getX()){
-                if (pipe.getY() - pipe.getGap()/2 > this.bird.getY() ||
-                        pipe.getY() + pipe.getGap()/2 < this.bird.getY() + this.bird.getBirdHeight()){
+            if (pipe.getX() < birdToCheck.getX() + birdToCheck.getBirdWidth() &&
+                    pipe.getX() + pipe.getPipeTopWidth() > birdToCheck.getX()){
+                if (pipe.getY() - pipe.getGap()/2 > birdToCheck.getY() ||
+                        pipe.getY() + pipe.getGap()/2 < birdToCheck.getY() + birdToCheck.getBirdHeight()){
                     return true;
                 }
             }
         }
 
         // Floor
-        if(this.bird.getY() + this.bird.getBirdHeight() > (int)(this.getHeight() * 0.885)){
+        if(birdToCheck.getY() + birdToCheck.getBirdHeight() > this.floorY){
             return true;
         }
 
@@ -154,7 +189,14 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     }
 
     public void startGame(){
-
+        this.pipes = new LinkedList<Pipe>();
+        if(humanPlaying){
+            this.pipeTimer = 0;
+        } else {
+            this.pipeTimer = pipeTimerSpawn;
+        }
+        this.globalX = 0;
+        this.score = 0;
     }
 
 
@@ -164,9 +206,13 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         // Background
         g.drawImage(backgroundImage, 0, 0, this.getWidth(), this.getHeight(), this);
         // Floor
-        g.drawImage(floorImage, -this.x, (int)(this.getHeight() * 0.885), 800, 15,this);
+        g.drawImage(floorImage, -this.x, this.floorY, 800, 15,this);
         // Bird
-        this.bird.repaint(g);
+        if(this.humanPlaying) {
+            this.bird.repaint(g);
+        } else {
+            this.aiConductor.repaint(g);
+        }
         // Pipes
         for(Pipe pipe : this.pipes){
             pipe.repaint(g);
@@ -199,21 +245,51 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     // Catch key up (arrow up)
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP){
-            if(this.state == GameState.WAITING){
-                this.state = GameState.PLAYING;
-            } else if(this.state == GameState.ENDSCREEN){
-                this.pipes.clear();
-                this.bird = new Bird(windowHeight);
-                this.score = 0;
-                this.state = GameState.WAITING;
+        if(this.humanPlaying) {
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                if (this.state == GameState.WAITING) {
+                    this.startGame();
+                    this.state = GameState.PLAYING;
+                } else if (this.state == GameState.ENDSCREEN) {
+                    this.pipes.clear();
+                    this.bird = new Bird(windowHeight);
+                    this.score = 0;
+                    this.state = GameState.WAITING;
+                }
+                this.bird.jump();
             }
-            this.bird.jump();
+        } else {
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                if (this.state == GameState.WAITING) {
+                    this.startGame();
+                    this.state = GameState.PLAYING;
+                }
+            }
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
 
+    }
+
+    public LinkedList<Pipe> getPipes() {
+        return pipes;
+    }
+
+    public int getVx() {
+        return vx;
+    }
+
+    public int getPipeTimer() {
+        return pipeTimer;
+    }
+
+    public int getWindowHeight() {
+        return windowHeight;
+    }
+
+    public int getFloorY() {
+        return floorY;
     }
 }
