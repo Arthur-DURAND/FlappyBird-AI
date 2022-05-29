@@ -1,7 +1,7 @@
 Flappy Bird with NEAT algorithm (no hidden layer)
 
-![alt text](./Images/FlappyBird_2.png)
-![alt text](./Images/FlappyBird_1.png)
+![alt text](./images/FlappyBird_2.png)
+![alt text](./images/FlappyBird_1.png)
 
 The original game : https://flappybird.io/
 (Images come from here)
