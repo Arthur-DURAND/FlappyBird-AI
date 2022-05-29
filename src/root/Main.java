@@ -17,7 +17,7 @@ public class Main {
                 new Gene(GeneType.INPUT, GeneDataType.VY),
                 new Gene(GeneType.OUTPUT, GeneDataType.JUMP)
         };
-        AIConductor aiConductor = new AIConductor(genes, 5000, windowHeight);
+        AIConductor aiConductor = new AIConductor(genes, 1000, windowHeight);
 
         boolean humanPlaying = false;
 

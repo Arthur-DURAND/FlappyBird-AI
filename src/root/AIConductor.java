@@ -50,8 +50,6 @@ public class AIConductor {
             }
         }
 
-        System.out.println(bestAi);
-
         for(int i=0 ; i<this.ais.length/4 ; i++){
             ais[i] = new AI(bestAi, bestAi, this.genes, this.windowHeight);
         }

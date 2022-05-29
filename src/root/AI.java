@@ -57,11 +57,9 @@ public class AI {
     public void play(Game game){
         for(Gene gene : this.genes) {
             if(gene.type == GeneType.OUTPUT){
-                int nbValues = 0;
                 double sumValues = (double)0;
                 for (Gene gene2 : this.genes) {
                     if(gene2.type == GeneType.INPUT){
-                        nbValues++;
                         Double value = (double) 0;
                         switch (gene2.dataType){
                             case VY:
@@ -82,9 +80,11 @@ public class AI {
                                 xDistancePipe = Integer.MAX_VALUE;
                                 int yDistancePipe = 0;
                                 for(Pipe pipe : pipes){
-                                    if(pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() + this.bird.getBirdWidth() > 0){
-                                        xDistancePipe = Math.min(xDistancePipe, pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() + this.bird.getBirdWidth());
-                                        yDistancePipe = pipe.getY() - pipe.getGap()/2 - this.bird.getY();
+                                    if(pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() > 0){
+                                        if(pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() < xDistancePipe) {
+                                            xDistancePipe = pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX();
+                                            yDistancePipe = pipe.getY() - pipe.getGap() / 2 - this.bird.getY();
+                                        }
                                     }
                                 }
                                 value = ((double) yDistancePipe / (double) (game.getWindowHeight()));
@@ -94,18 +94,20 @@ public class AI {
                                 xDistancePipe = Integer.MAX_VALUE;
                                 yDistancePipe = 0;
                                 for(Pipe pipe : pipes){
-                                    if(pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() + this.bird.getBirdWidth() > 0){
-                                        xDistancePipe = Math.min(xDistancePipe, pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() + this.bird.getBirdWidth());
-                                        yDistancePipe = pipe.getY() + pipe.getGap()/2 - this.bird.getY();
+                                    if(pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() > 0){
+                                        if(pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX() < xDistancePipe) {
+                                            xDistancePipe = pipe.getX() + pipe.getPipeTopWidth() - this.bird.getX();
+                                            yDistancePipe = pipe.getY() + pipe.getGap() / 2 - this.bird.getY();
+                                        }
                                     }
                                 }
                                 value = ((double) yDistancePipe / (double) (game.getWindowHeight()));
                                 break;
                             case Y_DISTANCE_FLOOR:
-                                value = ((double) (-this.bird.getY()+game.getFloorY()) / (double) (game.getFloorY()));
-                                /*if(value < 0){
+                                value = ((double) (-this.bird.getY()+game.getFloorY()*5./6.) / (double) (game.getFloorY()));
+                                if(value < 0){
                                     value = 0.;
-                                }*/
+                                }
                                 break;
                             case NO_PIPE:
                                 value = game.getPipes().size()==0?(double)1:(double)0;
@@ -114,7 +116,7 @@ public class AI {
                         sumValues += geneValue;
                     }
                 }
-                double finalValue = sumValues / nbValues;
+                double finalValue = Math.tanh(sumValues);
                 if(finalValue > 0){
                     switch(gene.dataType){
                         case JUMP:
