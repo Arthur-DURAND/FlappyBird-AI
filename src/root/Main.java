@@ -8,18 +8,18 @@ public class Main {
         int windowWidth = (int)(windowHeight*2./3.);
 
         // Setup ai
-        Gene[] genes = {
-                //new Gene(GeneType.INPUT, GeneDataType.X_DISTANCE_PIPE),
-                //new Gene(GeneType.INPUT, GeneDataType.NO_PIPE),
+        Gene[] inputGenes = {
+                new Gene(GeneType.INPUT, GeneDataType.X_DISTANCE_PIPE),
+                // new Gene(GeneType.INPUT, GeneDataType.NO_PIPE),
                 new Gene(GeneType.INPUT, GeneDataType.Y_DISTANCE_UP_PIPE),
                 new Gene(GeneType.INPUT, GeneDataType.Y_DISTANCE_BOTTOM_PIPE),
-                new Gene(GeneType.INPUT, GeneDataType.Y_DISTANCE_FLOOR),
-                new Gene(GeneType.INPUT, GeneDataType.VY),
-                new Gene(GeneType.OUTPUT, GeneDataType.JUMP)
+                new Gene(GeneType.INPUT, GeneDataType.Y_DISTANCE_FLOOR)
+                //new Gene(GeneType.INPUT, GeneDataType.VY),
         };
-        AIConductor aiConductor = new AIConductor(genes, 1000, windowHeight);
+        Gene outputGene = new Gene(GeneType.OUTPUT, GeneDataType.JUMP);
+        AIConductor aiConductor = new AIConductor(inputGenes, outputGene, 1000, windowHeight);
 
-        boolean humanPlaying = false;
+        boolean humanPlaying = true;
 
         // Setup game
         Game game = new Game(windowHeight, humanPlaying, aiConductor);

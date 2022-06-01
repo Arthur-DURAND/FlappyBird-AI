@@ -19,7 +19,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     private LinkedList<Pipe> pipes;
 
     // Floor animation
-    private final int vx = 10;
+    private final int vx = 11;
     private int x = 0;
     private int globalX = 0;
     private final int loopX = 36;
@@ -32,7 +32,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // To know when to summon pipe
     private int pipeTimer;
-    private final int pipeTimerSpawn = 40;
+    private final int pipeTimerSpawn = 45;
 
     // If still playing or not
     private GameState state;
@@ -291,5 +291,9 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     public int getFloorY() {
         return floorY;
+    }
+
+    public int getPipeTimerSpawn() {
+        return pipeTimerSpawn;
     }
 }

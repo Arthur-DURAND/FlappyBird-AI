@@ -7,7 +7,7 @@ public class Pipe {
     private int x;
     private int vx;
     private int y;
-    private final int gap = 170; //old 170
+    private final int gap = 150; //old 170
     private BufferedImage pipeTopImage;
     private BufferedImage pipeLayerImage;
     private final int pipeLayerWidth = 85;
@@ -20,7 +20,7 @@ public class Pipe {
 
     public Pipe(int windowWidth, int windowHeight, int vx, BufferedImage pipeTopImage, BufferedImage pipeLayerImage){
         this.x = windowWidth;
-        this.y = windowHeight/2 + (int)((Math.random()-0.5) * (windowHeight/2));
+        this.y = (int)(windowHeight*2./5.) + (int)((Math.random()-0.5) * (windowHeight*2./5.));
         this.vx = vx;
         this.windowHeight = windowHeight;
 

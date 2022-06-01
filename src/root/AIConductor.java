@@ -1,20 +1,23 @@
 package root;
 
 import java.awt.*;
+import java.util.HashMap;
 
 public class AIConductor {
 
     private AI[] ais;
-    private Gene[] genes;
+    private Gene[] inputGenes;
+    private Gene outputGene;
     private int windowHeight;
 
-    public AIConductor(Gene[] genes, int aiNumber, int windowHeight){
-        this.genes = genes;
+    public AIConductor(Gene[] inputGenes, Gene outputGene, int aiNumber, int windowHeight){
+        this.inputGenes = inputGenes;
+        this.outputGene = outputGene;
         this.windowHeight = windowHeight;
 
         this.ais = new AI[aiNumber];
         for(int i=0 ; i<aiNumber ; i++){
-            ais[i] = new AI(genes, windowHeight);
+            ais[i] = new AI(inputGenes, outputGene, windowHeight);
         }
     }
 
@@ -50,15 +53,23 @@ public class AIConductor {
             }
         }
 
-        for(int i=0 ; i<this.ais.length/4 ; i++){
-            ais[i] = new AI(bestAi, bestAi, this.genes, this.windowHeight);
+        for(int i=0 ; i<this.ais.length/8 ; i++){
+            ais[i] = new AI(bestAi, 0.01, this.inputGenes, this.outputGene, this.windowHeight);
         }
-        for(int i=this.ais.length/4 ; i<this.ais.length/2 ; i++){
-            ais[i] = new AI(secondBestAi, secondBestAi, this.genes, this.windowHeight);
+        for(int i=this.ais.length/8 ; i<this.ais.length/4 ; i++){
+            ais[i] = new AI(bestAi, 0.1, this.inputGenes, this.outputGene, this.windowHeight);
         }
-        for(int i=this.ais.length/2 ; i<this.ais.length ; i++){
-            ais[i] = new AI(bestAi, secondBestAi, this.genes, this.windowHeight);
+        for(int i=this.ais.length/4 ; i<this.ais.length*3/8. ; i++){
+            ais[i] = new AI(secondBestAi, 0.01, this.inputGenes, this.outputGene, this.windowHeight);
         }
+        for(int i=(int)(this.ais.length*3./8.) ; i<this.ais.length/2 ; i++){
+            ais[i] = new AI(secondBestAi, 0.1, this.inputGenes, this.outputGene, this.windowHeight);
+        }
+        for(int i=this.ais.length/2 ; i<this.ais.length-2 ; i++){
+            ais[i] = new AI(this.inputGenes, this.outputGene, this.windowHeight);
+        }
+        ais[this.ais.length-2] = bestAi;
+        ais[this.ais.length-1] = secondBestAi;
     }
 
     public void repaint(Graphics g){
